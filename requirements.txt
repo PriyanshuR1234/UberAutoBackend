@@ -1,6 +1,7 @@
 fastapi==0.104.1
-uvicorn==0.24.0
+uvicorn[standard]==0.24.0
 pydantic==2.5.0
 firebase-admin==6.2.0
 selenium==4.15.2
 undetected-chromedriver==3.5.4
+requests==2.31.0

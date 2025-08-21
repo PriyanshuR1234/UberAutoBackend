@@ -166,14 +166,46 @@ def _setup_driver():
     )
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev_shm_usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-plugins")
+    options.add_argument("--disable-images")
+    options.add_argument("--disable-javascript")
+    options.add_argument("--disable-web-security")
+    options.add_argument("--allow-running-insecure-content")
+    
     # Headless mode on Render or when HEADLESS=true
     if os.getenv("HEADLESS", "false").lower() == "true" or os.getenv("RENDER"):
         options.add_argument("--headless=new")
-        options.add_argument("--disable-gpu")
         options.add_argument("--window-size=420,900")
-    driver = uc.Chrome(version_main=138, options=options)
-    driver.set_window_size(420, 900)
-    return driver
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+    
+    try:
+        driver = uc.Chrome(version_main=138, options=options)
+        driver.set_window_size(420, 900)
+        return driver
+    except Exception as e:
+        print(f"⚠️ Failed to setup Chrome driver: {e}")
+        # Fallback to regular Chrome if undetected-chromedriver fails
+        try:
+            from selenium import webdriver
+            from selenium.webdriver.chrome.service import Service
+            from selenium.webdriver.chrome.options import Options
+            
+            chrome_options = Options()
+            chrome_options.add_argument("--no-sandbox")
+            chrome_options.add_argument("--disable-dev-shm-usage")
+            chrome_options.add_argument("--headless=new")
+            chrome_options.add_argument("--disable-gpu")
+            chrome_options.add_argument("--window-size=420,900")
+            
+            driver = webdriver.Chrome(options=chrome_options)
+            return driver
+        except Exception as e2:
+            print(f"⚠️ Failed to setup fallback Chrome driver: {e2}")
+            return None
 
 
 def _is_driver_alive(driver):
