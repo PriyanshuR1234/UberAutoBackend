@@ -174,6 +174,11 @@ def _setup_driver():
     options.add_argument("--disable-web-security")
     options.add_argument("--allow-running-insecure-content")
     
+    # Set Chrome binary path for Alpine Linux
+    chrome_bin = os.getenv("CHROME_BIN")
+    if chrome_bin:
+        options.binary_location = chrome_bin
+    
     # Headless mode on Render or when HEADLESS=true
     if os.getenv("HEADLESS", "false").lower() == "true" or os.getenv("RENDER"):
         options.add_argument("--headless=new")
@@ -183,6 +188,7 @@ def _setup_driver():
         options.add_argument("--disable-dev-shm-usage")
     
     try:
+        # Try undetected-chromedriver first
         driver = uc.Chrome(version_main=138, options=options)
         driver.set_window_size(420, 900)
         return driver
@@ -201,7 +207,18 @@ def _setup_driver():
             chrome_options.add_argument("--disable-gpu")
             chrome_options.add_argument("--window-size=420,900")
             
-            driver = webdriver.Chrome(options=chrome_options)
+            # Set Chrome binary path for Alpine Linux
+            if chrome_bin:
+                chrome_options.binary_location = chrome_bin
+            
+            # Set chromedriver path if available
+            chromedriver_path = os.getenv("CHROMEDRIVER_PATH")
+            if chromedriver_path:
+                service = Service(executable_path=chromedriver_path)
+                driver = webdriver.Chrome(service=service, options=chrome_options)
+            else:
+                driver = webdriver.Chrome(options=chrome_options)
+            
             return driver
         except Exception as e2:
             print(f"⚠️ Failed to setup fallback Chrome driver: {e2}")

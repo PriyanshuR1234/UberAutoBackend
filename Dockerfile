@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     unzip \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Chrome
@@ -20,8 +21,9 @@ WORKDIR /app
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies with pre-compiled wheels
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir --only-binary=all -r requirements.txt
 
 # Copy application code
 COPY . .
